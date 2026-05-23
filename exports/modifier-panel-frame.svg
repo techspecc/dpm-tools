@@ -1,0 +1,16 @@
+<svg width="320" height="720" viewBox="0 0 320 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="720" rx="14" fill="white" fill-opacity="0.08" stroke="white" stroke-opacity="0.28"/>
+  <rect width="320" height="56" rx="14" fill="white" fill-opacity="0.1"/>
+  <path d="M0 56H320" stroke="white" stroke-opacity="0.18"/>
+  <path d="M0 100H320" stroke="white" stroke-opacity="0.18"/>
+  <path d="M160 56V100" stroke="white" stroke-opacity="0.18"/>
+  <rect x="20" y="136" width="280" height="36" stroke="white" stroke-opacity="0.16"/>
+  <path d="M20 252H300" stroke="white" stroke-opacity="0.14"/>
+  <path d="M20 316H300" stroke="white" stroke-opacity="0.14"/>
+  <path d="M20 380H300" stroke="white" stroke-opacity="0.14"/>
+  <path d="M20 444H300" stroke="white" stroke-opacity="0.14"/>
+  <path d="M20 508H300" stroke="white" stroke-opacity="0.14"/>
+  <path d="M20 572H300" stroke="white" stroke-opacity="0.14"/>
+  <path d="M20 636H300" stroke="white" stroke-opacity="0.14"/>
+  <rect x="20" y="204" width="280" height="36" stroke="white" stroke-opacity="0.14"/>
+</svg>
