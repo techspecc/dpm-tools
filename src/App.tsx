@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { createNoise4D } from 'simplex-noise';
 
 // Predefined camo palettes with authentic color ratios
@@ -31,7 +31,7 @@ const PRESETS = {
   'Desert Pixel Steppe': ['#D7C6A8', '#B99A75', '#8B6F55', '#62503F', '#F0E4C7'],
   'Snow Digital': ['#F0F2EF', '#CED8DC', '#9EABB2', '#5C6870', '#20272E'],
   // Commercial & Generic
-  'Canyon Blue Trail': ['#CBBE9F', '#E8E1CF', '#5F6650', '#35434A', '#1F67B1', '#171A18'],
+  'Canyon Blue Trail': ['#E6DEC7', '#CBB894', '#A8A98D', '#7C8A7A', '#5D6F72', '#4B6285', '#2E3A4D', '#11161E'],
   'Desert Digital': ['#E1D3B5', '#D2B99B', '#A78C69', '#78624E'],
   'Urban Digital': ['#E0E0E0', '#9E9E9E', '#616161', '#212121'],
 };
@@ -46,6 +46,121 @@ const PRESET_GROUPS = {
 
 type PresetName = keyof typeof PRESETS;
 type DesignMode = 'none' | 'micro-cut' | 'step-cut' | 'block-weave';
+type PatternModel = 'fractal' | 'digital-mosaic';
+type PatternProfile = {
+  scale: number;
+  octaves: number;
+  edgeRoughness: number;
+  clustering: number;
+  horizontalCondense: number;
+  verticalCondense: number;
+  coverageBias: number;
+  designMode: DesignMode;
+  designAmount: number;
+  baseOpacity: number;
+  seed: number;
+  patternModel: PatternModel;
+  colorWeights?: number[];
+};
+
+const DEFAULT_PROFILE: PatternProfile = {
+  scale: 4.0,
+  octaves: 3,
+  edgeRoughness: 0.9,
+  clustering: 0.65,
+  horizontalCondense: 0.55,
+  verticalCondense: 1.45,
+  coverageBias: 0,
+  designMode: 'step-cut',
+  designAmount: 0.45,
+  baseOpacity: 1,
+  seed: 888888,
+  patternModel: 'fractal',
+};
+
+const PRESET_PROFILE_OVERRIDES: Partial<Record<PresetName, Partial<PatternProfile>>> = {
+  'PLA Type 07 Universal': { patternModel: 'digital-mosaic', scale: 6.1, octaves: 2, edgeRoughness: 0.45, clustering: 0.95, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -2, designMode: 'none', designAmount: 0.25, seed: 700101, colorWeights: [0.36, 0.28, 0.22, 0.14] },
+  'PLA Type 07 Oceanic': { patternModel: 'digital-mosaic', scale: 6.4, octaves: 2, edgeRoughness: 0.42, clustering: 1.02, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -1, designMode: 'none', designAmount: 0.2, seed: 700102, colorWeights: [0.34, 0.3, 0.22, 0.14] },
+  'PLA Type 07 09 Aviation': { patternModel: 'digital-mosaic', scale: 5.9, octaves: 2, edgeRoughness: 0.5, clustering: 1.05, horizontalCondense: 1.05, verticalCondense: 1.0, coverageBias: -1, designMode: 'none', designAmount: 0.2, seed: 700103, colorWeights: [0.28, 0.24, 0.2, 0.14, 0.14] },
+  'PLA Type 07 Urban': { patternModel: 'digital-mosaic', scale: 6.2, octaves: 2, edgeRoughness: 0.38, clustering: 1.08, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -3, designMode: 'none', designAmount: 0.18, seed: 700104, colorWeights: [0.33, 0.28, 0.24, 0.15] },
+  'PLA Type 07 Special Forces': { patternModel: 'digital-mosaic', scale: 5.7, octaves: 2, edgeRoughness: 0.52, clustering: 0.9, horizontalCondense: 0.95, verticalCondense: 1.1, coverageBias: -1, designMode: 'micro-cut', designAmount: 0.35, seed: 700105, colorWeights: [0.3, 0.26, 0.22, 0.22] },
+  'PLA Type 07 Arid': { patternModel: 'digital-mosaic', scale: 6.0, octaves: 2, edgeRoughness: 0.4, clustering: 0.9, horizontalCondense: 1.05, verticalCondense: 1.0, coverageBias: 3, designMode: 'none', designAmount: 0.2, seed: 700106, colorWeights: [0.36, 0.28, 0.22, 0.14] },
+  'PLA Type 07 Woodland': { patternModel: 'digital-mosaic', scale: 5.8, octaves: 2, edgeRoughness: 0.48, clustering: 0.96, horizontalCondense: 0.95, verticalCondense: 1.05, coverageBias: -1, designMode: 'none', designAmount: 0.22, seed: 700107, colorWeights: [0.32, 0.28, 0.22, 0.18] },
+
+  'PLA Type 19 Woodland': { patternModel: 'digital-mosaic', scale: 6.3, octaves: 2, edgeRoughness: 0.35, clustering: 1.12, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -2, designMode: 'none', designAmount: 0.2, seed: 701101, colorWeights: [0.25, 0.23, 0.2, 0.18, 0.14] },
+  'PLA Type 19 Jungle': { patternModel: 'digital-mosaic', scale: 6.0, octaves: 2, edgeRoughness: 0.44, clustering: 1.0, horizontalCondense: 0.95, verticalCondense: 1.05, coverageBias: -2, designMode: 'none', designAmount: 0.22, seed: 701102, colorWeights: [0.24, 0.23, 0.2, 0.18, 0.15] },
+  'PLA Type 19 Desert': { patternModel: 'digital-mosaic', scale: 6.2, octaves: 2, edgeRoughness: 0.33, clustering: 0.88, horizontalCondense: 1.08, verticalCondense: 1.0, coverageBias: 3, designMode: 'none', designAmount: 0.18, seed: 701103, colorWeights: [0.32, 0.24, 0.2, 0.15, 0.09] },
+  'PLA Type 19 Arid': { patternModel: 'digital-mosaic', scale: 6.0, octaves: 2, edgeRoughness: 0.34, clustering: 0.9, horizontalCondense: 1.05, verticalCondense: 1.0, coverageBias: 2, designMode: 'none', designAmount: 0.18, seed: 701104, colorWeights: [0.3, 0.24, 0.2, 0.16, 0.1] },
+  'PLA Type 19 Urban': { patternModel: 'digital-mosaic', scale: 6.3, octaves: 2, edgeRoughness: 0.32, clustering: 1.1, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -4, designMode: 'none', designAmount: 0.15, seed: 701105, colorWeights: [0.3, 0.24, 0.2, 0.16, 0.1] },
+
+  'UCP': { patternModel: 'digital-mosaic', scale: 6.8, octaves: 2, edgeRoughness: 0.28, clustering: 1.18, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -5, designMode: 'none', designAmount: 0.12, seed: 101144, colorWeights: [0.42, 0.34, 0.24] },
+  'MARPAT Woodland': { patternModel: 'digital-mosaic', scale: 5.6, octaves: 3, edgeRoughness: 0.55, clustering: 1.0, horizontalCondense: 0.95, verticalCondense: 1.05, coverageBias: -3, designMode: 'micro-cut', designAmount: 0.34, seed: 510312, colorWeights: [0.34, 0.27, 0.22, 0.17] },
+  'CADPAT TW': { patternModel: 'digital-mosaic', scale: 5.9, octaves: 3, edgeRoughness: 0.5, clustering: 1.06, horizontalCondense: 0.95, verticalCondense: 1.08, coverageBias: -2, designMode: 'micro-cut', designAmount: 0.36, seed: 381920, colorWeights: [0.34, 0.27, 0.22, 0.17] },
+  'NWU Type I': { patternModel: 'digital-mosaic', scale: 6.0, octaves: 2, edgeRoughness: 0.46, clustering: 1.1, horizontalCondense: 1.02, verticalCondense: 1.0, coverageBias: -2, designMode: 'none', designAmount: 0.2, seed: 174220, colorWeights: [0.28, 0.27, 0.24, 0.21] },
+  'AOR1 Desert': { patternModel: 'digital-mosaic', scale: 5.8, octaves: 2, edgeRoughness: 0.42, clustering: 0.95, horizontalCondense: 1.06, verticalCondense: 1.0, coverageBias: 2, designMode: 'none', designAmount: 0.2, seed: 456120, colorWeights: [0.3, 0.22, 0.2, 0.16, 0.12] },
+  'AOR2 Woodland': { patternModel: 'digital-mosaic', scale: 5.8, octaves: 2, edgeRoughness: 0.48, clustering: 1.0, horizontalCondense: 0.94, verticalCondense: 1.08, coverageBias: -2, designMode: 'none', designAmount: 0.22, seed: 456222, colorWeights: [0.3, 0.22, 0.2, 0.16, 0.12] },
+  'M90K Digital': { patternModel: 'digital-mosaic', scale: 6.1, octaves: 2, edgeRoughness: 0.4, clustering: 1.05, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -1, designMode: 'none', designAmount: 0.2, seed: 619090, colorWeights: [0.28, 0.23, 0.2, 0.17, 0.12] },
+  'EMR Digital Flora': { patternModel: 'digital-mosaic', scale: 5.7, octaves: 3, edgeRoughness: 0.58, clustering: 1.04, horizontalCondense: 0.92, verticalCondense: 1.1, coverageBias: -2, designMode: 'micro-cut', designAmount: 0.28, seed: 720315, colorWeights: [0.26, 0.24, 0.2, 0.18, 0.12] },
+  'MM14 Ukraine': { patternModel: 'digital-mosaic', scale: 6.0, octaves: 2, edgeRoughness: 0.42, clustering: 1.07, horizontalCondense: 0.98, verticalCondense: 1.02, coverageBias: -2, designMode: 'none', designAmount: 0.18, seed: 640114, colorWeights: [0.3, 0.24, 0.2, 0.16, 0.1] },
+  'DPM Digital Temperate': { patternModel: 'digital-mosaic', scale: 5.9, octaves: 3, edgeRoughness: 0.56, clustering: 1.0, horizontalCondense: 0.92, verticalCondense: 1.08, coverageBias: -1, designMode: 'micro-cut', designAmount: 0.28, seed: 731415, colorWeights: [0.28, 0.24, 0.2, 0.16, 0.12] },
+  'Desert Pixel Steppe': { patternModel: 'digital-mosaic', scale: 6.1, octaves: 2, edgeRoughness: 0.34, clustering: 0.9, horizontalCondense: 1.08, verticalCondense: 1.0, coverageBias: 3, designMode: 'none', designAmount: 0.16, seed: 650301, colorWeights: [0.34, 0.24, 0.18, 0.14, 0.1] },
+  'Snow Digital': { patternModel: 'digital-mosaic', scale: 6.6, octaves: 2, edgeRoughness: 0.3, clustering: 1.12, horizontalCondense: 1.04, verticalCondense: 1.0, coverageBias: 6, designMode: 'none', designAmount: 0.14, seed: 711155, colorWeights: [0.38, 0.26, 0.18, 0.12, 0.06] },
+
+  'Desert Digital': { patternModel: 'digital-mosaic', scale: 6.0, octaves: 2, edgeRoughness: 0.34, clustering: 0.9, horizontalCondense: 1.08, verticalCondense: 1.0, coverageBias: 4, designMode: 'none', designAmount: 0.16, seed: 620144, colorWeights: [0.36, 0.28, 0.22, 0.14] },
+  'Urban Digital': { patternModel: 'digital-mosaic', scale: 6.4, octaves: 2, edgeRoughness: 0.3, clustering: 1.12, horizontalCondense: 1.0, verticalCondense: 1.0, coverageBias: -5, designMode: 'none', designAmount: 0.14, seed: 620188, colorWeights: [0.36, 0.28, 0.22, 0.14] },
+  'Canyon Blue Trail': {
+    scale: 5.8,
+    octaves: 2,
+    edgeRoughness: 0.45,
+    clustering: 1.15,
+    horizontalCondense: 1.0,
+    verticalCondense: 1.0,
+    coverageBias: -3,
+    designMode: 'none',
+    designAmount: 0.25,
+    baseOpacity: 1,
+    seed: 390271,
+    patternModel: 'digital-mosaic',
+    // tuned from shoe textile: light base + dark/navy clusters + sparse bright blue
+    colorWeights: [0.26, 0.2, 0.16, 0.14, 0.1, 0.08, 0.04, 0.02],
+  },
+};
+
+function profileForPreset(preset: PresetName): PatternProfile {
+  return {
+    ...DEFAULT_PROFILE,
+    ...PRESET_PROFILE_OVERRIDES[preset],
+  };
+}
+
+function mulberry32(seed: number) {
+  let t = seed >>> 0;
+  return () => {
+    t += 0x6d2b79f5;
+    let v = Math.imul(t ^ (t >>> 15), 1 | t);
+    v ^= v + Math.imul(v ^ (v >>> 7), 61 | v);
+    return ((v ^ (v >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function normalizedWeights(count: number, source?: number[]) {
+  if (!source || source.length === 0) {
+    return new Array(count).fill(1 / count);
+  }
+  const out = new Array(count).fill(0).map((_, idx) => source[idx] ?? source[source.length - 1] ?? 1);
+  const total = out.reduce((sum, n) => sum + Math.max(0.0001, n), 0);
+  return out.map((n) => Math.max(0.0001, n) / total);
+}
+
+function weightedPick(weights: number[], rand: () => number) {
+  const target = rand();
+  let acc = 0;
+  for (let i = 0; i < weights.length; i += 1) {
+    acc += weights[i];
+    if (target <= acc) return i;
+  }
+  return weights.length - 1;
+}
 
 type Snapshot = {
   gridSize: number;
@@ -61,8 +176,11 @@ type Snapshot = {
   hueShift: number;
   previewRepeat: boolean;
   previewGrid9: boolean;
+  shuffleColorsEnabled: boolean;
   designMode: DesignMode;
   designAmount: number;
+  patternModel: PatternModel;
+  colorWeights: number[];
   seed: number;
   preset: PresetName;
   currentColors: string[];
@@ -247,44 +365,124 @@ function generateDigitalCamoGrid(
     }
   }
 
-  return lockGridSeams(grid, 2);
+  return lockGridSeams(grid, 3);
+}
+
+function generateDigitalMosaicGrid(
+  width: number,
+  height: number,
+  seed: number,
+  colors: string[],
+  colorWeights?: number[],
+) {
+  const rand = mulberry32(seed);
+  const weights = normalizedWeights(colors.length, colorWeights);
+  const grid = new Array(height).fill(0).map(() => new Array(width).fill(colors[0]));
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      grid[y][x] = colors[weightedPick(weights, rand)];
+    }
+  }
+
+  // Lay down stepped rectangular "digital" patches to mimic woven pixel camo panels.
+  const patches = Math.floor((width * height) / 24);
+  for (let i = 0; i < patches; i += 1) {
+    const color = colors[weightedPick(weights, rand)];
+    const x0 = Math.floor(rand() * width);
+    const y0 = Math.floor(rand() * height);
+    const blockW = 1 + Math.floor(rand() * 4);
+    const blockH = 1 + Math.floor(rand() * 4);
+    const steps = 1 + Math.floor(rand() * 4);
+
+    for (let s = 0; s < steps; s += 1) {
+      const ox = x0 + (s * (rand() > 0.5 ? 1 : -1));
+      const oy = y0 + (s * (rand() > 0.5 ? 1 : -1));
+      for (let yy = 0; yy < blockH; yy += 1) {
+        for (let xx = 0; xx < blockW; xx += 1) {
+          const x = ((ox + xx) % width + width) % width;
+          const y = ((oy + yy) % height + height) % height;
+          grid[y][x] = color;
+        }
+      }
+    }
+  }
+
+  // Majority clean-up while preserving block corners.
+  for (let pass = 0; pass < 2; pass += 1) {
+    const next = grid.map((row) => [...row]);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const counts = new Map<string, number>();
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (let dx = -1; dx <= 1; dx += 1) {
+            const xx = (x + dx + width) % width;
+            const yy = (y + dy + height) % height;
+            const c = grid[yy][xx];
+            counts.set(c, (counts.get(c) ?? 0) + 1);
+          }
+        }
+        let best = grid[y][x];
+        let bestCount = -1;
+        counts.forEach((count, c) => {
+          if (count > bestCount) {
+            best = c;
+            bestCount = count;
+          }
+        });
+        if (rand() > 0.25) next[y][x] = best;
+      }
+    }
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        grid[y][x] = next[y][x];
+      }
+    }
+  }
+
+  return lockGridSeams(grid, 3);
 }
 
 export default function App() {
+  const BASE_PREVIEW_PIXEL_SIZE = 5;
+  const INITIAL_PRESET: PresetName = 'Canyon Blue Trail';
+  const initialProfile = profileForPreset(INITIAL_PRESET);
   const [gridSize, setGridSize] = useState(160);
   const [pixelSize, setPixelSize] = useState(5);
-  const [scale, setScale] = useState(4.0);
-  const [octaves, setOctaves] = useState(3);
-  const [edgeRoughness, setEdgeRoughness] = useState(0.9);
-  const [clustering, setClustering] = useState(0.65);
-  const [horizontalCondense, setHorizontalCondense] = useState(0.55);
-  const [verticalCondense, setVerticalCondense] = useState(1.45);
-  const [coverageBias, setCoverageBias] = useState(0);
-  const [baseOpacity, setBaseOpacity] = useState(0.5); // New control for glass background
+  const [scale, setScale] = useState(initialProfile.scale);
+  const [octaves, setOctaves] = useState(initialProfile.octaves);
+  const [edgeRoughness, setEdgeRoughness] = useState(initialProfile.edgeRoughness);
+  const [clustering, setClustering] = useState(initialProfile.clustering);
+  const [horizontalCondense, setHorizontalCondense] = useState(initialProfile.horizontalCondense);
+  const [verticalCondense, setVerticalCondense] = useState(initialProfile.verticalCondense);
+  const [coverageBias, setCoverageBias] = useState(initialProfile.coverageBias);
+  const [baseOpacity, setBaseOpacity] = useState(initialProfile.baseOpacity);
   const [hueShift, setHueShift] = useState(0);
   const [previewRepeat, setPreviewRepeat] = useState(true);
   const [previewGrid9, setPreviewGrid9] = useState(false);
-  const [designMode, setDesignMode] = useState<DesignMode>('step-cut');
-  const [designAmount, setDesignAmount] = useState(0.45);
-  const [seed, setSeed] = useState(888888);
+  const [shuffleColorsEnabled, setShuffleColorsEnabled] = useState(false);
+  const [designMode, setDesignMode] = useState<DesignMode>(initialProfile.designMode);
+  const [designAmount, setDesignAmount] = useState(initialProfile.designAmount);
+  const [patternModel, setPatternModel] = useState<PatternModel>(initialProfile.patternModel);
+  const [colorWeights, setColorWeights] = useState<number[]>([...(initialProfile.colorWeights ?? [])]);
+  const [seed, setSeed] = useState(initialProfile.seed);
 
   const [showPalette, setShowPalette] = useState(false);
   const [history, setHistory] = useState<Snapshot[]>([]);
 
-  const [preset, setPreset] = useState<PresetName>('Canyon Blue Trail');
-  const [currentColors, setCurrentColors] = useState<string[]>([...PRESETS['Canyon Blue Trail']]);
-
-  useEffect(() => {
-    setCurrentColors([...PRESETS[preset]]);
-  }, [preset]);
+  const [preset, setPreset] = useState<PresetName>(INITIAL_PRESET);
+  const [currentColors, setCurrentColors] = useState<string[]>([...PRESETS[INITIAL_PRESET]]);
 
   const renderedColors = useMemo(() => {
     return currentColors.map((color) => shiftHexHue(color, hueShift));
   }, [currentColors, hueShift]);
 
   const grid = useMemo(() => {
+    if (patternModel === 'digital-mosaic') {
+      return generateDigitalMosaicGrid(gridSize, gridSize, seed, renderedColors, colorWeights);
+    }
     return generateDigitalCamoGrid(gridSize, gridSize, scale, seed, renderedColors, octaves, edgeRoughness, coverageBias, clustering, horizontalCondense, verticalCondense);
-  }, [gridSize, scale, seed, renderedColors, octaves, edgeRoughness, coverageBias, clustering, horizontalCondense, verticalCondense]);
+  }, [patternModel, gridSize, scale, seed, renderedColors, octaves, edgeRoughness, coverageBias, clustering, horizontalCondense, verticalCondense, colorWeights]);
 
   const svgDataUrl = useMemo(() => {
     if (!grid) return '';
@@ -300,7 +498,7 @@ export default function App() {
           span++;
         } else {
           if (currentColor !== renderedColors[0]) {
-            rects += `<rect x="${startX * pixelSize}" y="${y * pixelSize}" width="${span * pixelSize}" height="${pixelSize}" fill="${currentColor}" stroke="${currentColor}" stroke-width="0.5"/>`;
+            rects += `<rect x="${startX * pixelSize}" y="${y * pixelSize}" width="${span * pixelSize}" height="${pixelSize}" fill="${currentColor}"/>`;
           }
           if (x < gridSize) {
             startX = x;
@@ -367,9 +565,11 @@ export default function App() {
       }
     }
 
-    const svgStr = `<svg width="${tileSize}" height="${tileSize}" viewBox="0 0 ${tileSize} ${tileSize}" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="${renderedColors[0]}" fill-opacity="${baseOpacity}"/>${rects}${designRects}</svg>`;
+    const svgStr = `<svg width="${tileSize}" height="${tileSize}" viewBox="0 0 ${tileSize} ${tileSize}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="${renderedColors[0]}" fill-opacity="${baseOpacity}"/>${rects}${designRects}</svg>`;
     return `data:image/svg+xml;utf8,${encodeURIComponent(svgStr)}`;
   }, [grid, gridSize, pixelSize, renderedColors, baseOpacity, seed, designMode, designAmount]);
+
+  const previewTileSize = gridSize * BASE_PREVIEW_PIXEL_SIZE;
 
   const handleExportSVG = () => {
     const svgData = decodeURIComponent(svgDataUrl.replace('data:image/svg+xml;utf8,', ''));
@@ -397,8 +597,11 @@ export default function App() {
     hueShift,
     previewRepeat,
     previewGrid9,
+    shuffleColorsEnabled,
     designMode,
     designAmount,
+    patternModel,
+    colorWeights: [...colorWeights],
     seed,
     preset,
     currentColors: [...currentColors],
@@ -423,8 +626,11 @@ export default function App() {
     setHueShift(snapshot.hueShift);
     setPreviewRepeat(snapshot.previewRepeat);
     setPreviewGrid9(snapshot.previewGrid9);
+    setShuffleColorsEnabled(snapshot.shuffleColorsEnabled);
     setDesignMode(snapshot.designMode);
     setDesignAmount(snapshot.designAmount);
+    setPatternModel(snapshot.patternModel);
+    setColorWeights([...snapshot.colorWeights]);
     setSeed(snapshot.seed);
     setPreset(snapshot.preset);
     setCurrentColors([...snapshot.currentColors]);
@@ -445,9 +651,104 @@ export default function App() {
     setSeed(Date.now());
   };
 
+  const applyPresetProfile = (nextPreset: PresetName) => {
+    const profile = profileForPreset(nextPreset);
+    setPreset(nextPreset);
+    setCurrentColors([...PRESETS[nextPreset]]);
+    setScale(profile.scale);
+    setOctaves(profile.octaves);
+    setEdgeRoughness(profile.edgeRoughness);
+    setClustering(profile.clustering);
+    setHorizontalCondense(profile.horizontalCondense);
+    setVerticalCondense(profile.verticalCondense);
+    setCoverageBias(profile.coverageBias);
+    setBaseOpacity(profile.baseOpacity);
+    setDesignMode(profile.designMode);
+    setDesignAmount(profile.designAmount);
+    setPatternModel(profile.patternModel);
+    setColorWeights([...(profile.colorWeights ?? [])]);
+    setSeed(profile.seed);
+  };
+
+  const random01 = () => {
+    const cryptoApi = globalThis.crypto;
+    if (cryptoApi?.getRandomValues) {
+      const arr = new Uint32Array(1);
+      cryptoApi.getRandomValues(arr);
+      return arr[0] / 4294967296;
+    }
+    return Math.random();
+  };
+
+  const generateShuffledColors = (count: number) => {
+    const camoHexFromHsl = (h: number, s: number, l: number) => {
+      const rgb = hslToRgb(h, s, l);
+      return rgbToHex(rgb.r, rgb.g, rgb.b);
+    };
+
+    // Randomly pick a palette archetype so repeated shuffles feel less formulaic.
+    const archetypes = [
+      // [hue center, hue spread, sat min, sat max, light min, light max]
+      [0.26, 0.11, 0.14, 0.52, 0.12, 0.66], // woodland
+      [0.10, 0.09, 0.12, 0.45, 0.18, 0.72], // desert
+      [0.58, 0.08, 0.12, 0.50, 0.14, 0.62], // naval/blue-gray
+      [0.00, 1.00, 0.03, 0.18, 0.20, 0.82], // urban neutral mix
+      [0.52, 0.16, 0.08, 0.35, 0.58, 0.90], // snow/washed tones
+    ] as const;
+
+    const picked = archetypes[Math.floor(random01() * archetypes.length)];
+    const [hCenter, hSpread, sMin, sMax, lMin, lMax] = picked;
+
+    const colors = new Array(count).fill(0).map(() => {
+      const hue = (hCenter + (random01() * 2 - 1) * hSpread + 1) % 1;
+      const sat = sMin + random01() * (sMax - sMin);
+      const light = lMin + random01() * (lMax - lMin);
+      return camoHexFromHsl(hue, sat, light);
+    });
+
+    // Ensure usable contrast in every shuffled palette.
+    const darkHue = (hCenter + (random01() * 2 - 1) * hSpread + 1) % 1;
+    const lightHue = (hCenter + (random01() * 2 - 1) * hSpread + 1) % 1;
+    colors[0] = camoHexFromHsl(darkHue, sMin + random01() * (sMax * 0.7), 0.09 + random01() * 0.12);
+    colors[colors.length - 1] = camoHexFromHsl(lightHue, sMin + random01() * (sMax * 0.8), 0.72 + random01() * 0.18);
+
+    return colors;
+  };
+
   const shuffleSeed = () => {
+    const rand = (min: number, max: number, step = 0.01) => {
+      const steps = Math.round((max - min) / step);
+      const value = min + Math.floor(random01() * (steps + 1)) * step;
+      return Number(value.toFixed(4));
+    };
+
+    const pick = <T,>(values: T[]): T => values[Math.floor(random01() * values.length)];
+
     pushHistory();
-    setSeed(Math.floor(Math.random() * 1000000));
+    setScale(rand(1.2, 10, 0.1));
+    setOctaves(Math.round(rand(1, 5, 1)));
+    setEdgeRoughness(rand(0, 2, 0.05));
+    setClustering(rand(0, 2, 0.05));
+    setHorizontalCondense(rand(0.25, 3, 0.05));
+    setVerticalCondense(rand(0.25, 3, 0.05));
+    setCoverageBias(Math.round(rand(-30, 30, 1)));
+    const nextModel = pick<PatternModel>(['fractal', 'digital-mosaic']);
+    setPatternModel(nextModel);
+    setDesignMode(nextModel === 'digital-mosaic' ? 'none' : pick<DesignMode>(['none', 'micro-cut', 'step-cut', 'block-weave']));
+    setDesignAmount(rand(0, 1.5, 0.05));
+    if (nextModel === 'digital-mosaic') {
+      const raw = currentColors.map(() => 0.2 + random01());
+      const total = raw.reduce((sum, value) => sum + value, 0);
+      setColorWeights(raw.map((value) => value / total));
+    } else {
+      setColorWeights([]);
+    }
+    if (shuffleColorsEnabled) {
+      setCurrentColors(generateShuffledColors(currentColors.length));
+    }
+    setGridSize(Math.round(rand(64, 256, 16)));
+    setPixelSize(Math.round(rand(2, 16, 1)));
+    setSeed(Math.floor(random01() * 1000000));
   };
 
   const handleColorChange = (index: number, newHex: string) => {
@@ -468,27 +769,38 @@ export default function App() {
     }
   };
 
+  const panelParam = new URLSearchParams(window.location.search).get('panel');
+  const modularPanelMode = panelParam === 'preview' || panelParam === 'controls';
+  const purePreviewWindow = panelParam === 'preview';
+  const showPreviewPanel = panelParam !== 'controls';
+  const showControlsPanel = panelParam !== 'preview';
+
   return (
     <div className="fixed inset-0 w-full h-full font-mono text-[11px] uppercase tracking-wider text-white overflow-hidden bg-transparent">
 
       {/* Title bar drag area for Electron */}
+      {!purePreviewWindow && (
       <div className="absolute top-0 left-0 w-full h-12 z-30" style={{ WebkitAppRegion: 'drag' } as any} />
+      )}
 
       {/* Clean rear glass layer. No camo is rendered here. */}
+      {!purePreviewWindow && (
       <div className="absolute inset-0 z-0 bg-white/5 backdrop-blur-[2px]" />
+      )}
 
-      {/* Center Canvas Area (The SVGs exist here, surrounded by the clear glass frame of the app) */}
-      <div className="absolute inset-10 z-10 bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.35)] overflow-hidden rounded-xl">
+      {/* Floating preview panel */}
+      {showPreviewPanel && (
+      <div className={`${modularPanelMode ? 'absolute inset-0 z-10' : 'absolute left-[360px] right-6 top-10 bottom-10 z-10'} ${modularPanelMode ? 'bg-transparent border-0 rounded-none shadow-none backdrop-blur-0' : 'bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.35)] rounded-xl'} overflow-hidden`}>
         {previewGrid9 ? (
           <div className="w-full h-full flex items-center justify-center overflow-auto p-8">
             <div
-              className="grid grid-cols-9 border border-white/20"
+              className="grid grid-cols-3 border border-white/20"
               style={{
-                width: 'min(100%, 760px)',
-                aspectRatio: '1 / 1',
+                width: `min(calc(100% - 2rem), ${previewTileSize * 3}px)`,
+                aspectRatio: `${gridSize * pixelSize} / ${gridSize * pixelSize}`,
               }}
             >
-              {Array.from({ length: 81 }).map((_, index) => (
+              {Array.from({ length: 9 }).map((_, index) => (
                 <div
                   key={index}
                   className="border border-white/10"
@@ -508,17 +820,19 @@ export default function App() {
             style={{
               backgroundImage: `url("${svgDataUrl}")`,
               backgroundRepeat: previewRepeat ? 'repeat' : 'no-repeat',
-              backgroundPosition: 'center',
-              backgroundSize: `${gridSize * pixelSize}px ${gridSize * pixelSize}px`
+              backgroundPosition: previewRepeat ? 'top left' : 'center',
+              // Keep preview tile footprint stable so pixel-size changes adjust pattern blocks
+              // instead of feeling like a plain zoom.
+              backgroundSize: `${previewTileSize}px ${previewTileSize}px`
             }}
           />
         )}
       </div>
+      )}
 
-      {/* Floating Glass Settings Panel */}
-      <div className="absolute left-6 top-10 bottom-10 w-[320px] flex flex-col z-20
-                      bg-black/40 backdrop-blur-2xl border border-white/10 rounded-xl
-                      shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden">
+      {/* Floating controls panel */}
+      {showControlsPanel && (
+      <div className={`${modularPanelMode ? 'absolute inset-6 w-auto' : 'absolute left-6 top-10 bottom-10 w-[320px]'} flex flex-col z-20 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden`}>
 
         {/* Header */}
         <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
@@ -548,6 +862,15 @@ export default function App() {
             SHUFFLE
           </button>
           <button
+            onClick={() => {
+              pushHistory();
+              setShuffleColorsEnabled((enabled) => !enabled);
+            }}
+            className="flex-1 py-3 border-r border-white/10 hover:bg-white/10 transition-none text-center cursor-pointer text-white/80"
+          >
+            AUTO COLORS {shuffleColorsEnabled ? 'ON' : 'OFF'}
+          </button>
+          <button
             onClick={handleExportSVG}
             className="flex-1 py-3 hover:bg-white hover:text-black transition-none text-center cursor-pointer font-bold"
           >
@@ -566,7 +889,7 @@ export default function App() {
                 value={preset}
                 onChange={(e) => {
                   pushHistory();
-                  setPreset(e.target.value as PresetName);
+                  applyPresetProfile(e.target.value as PresetName);
                 }}
               >
                 {Object.entries(PRESET_GROUPS).map(([groupName, presets]) => (
@@ -671,7 +994,7 @@ export default function App() {
             }}
             className="w-full border border-white/10 py-2 text-white/70 hover:bg-white/10 hover:text-white"
           >
-            9X9 SEAM GRID {previewGrid9 ? 'ON' : 'OFF'}
+            3X3 SEAM GRID {previewGrid9 ? 'ON' : 'OFF'}
           </button>
 
           {/* Sliders */}
@@ -681,10 +1004,10 @@ export default function App() {
             { label: 'H CONDENSE', val: horizontalCondense, min: 0.25, max: 3, step: 0.05, set: setHorizontalCondense, display: horizontalCondense.toFixed(2) },
             { label: 'V CONDENSE', val: verticalCondense, min: 0.25, max: 3, step: 0.05, set: setVerticalCondense, display: verticalCondense.toFixed(2) },
             { label: 'ROUGHNESS', val: edgeRoughness, min: 0, max: 2, step: 0.05, set: setEdgeRoughness, display: edgeRoughness.toFixed(2) },
-            { label: 'BIAS', val: coverageBias, min: -30, max: 30, step: 1, set: setCoverageBias, display: coverageBias > 0 ? `+${coverageBias}` : coverageBias },
-            { label: 'HUE', val: hueShift, min: -180, max: 180, step: 1, set: setHueShift, display: `${hueShift}°` },
+            { label: 'BIAS', val: coverageBias, min: -30, max: 30, step: 1, set: setCoverageBias, display: coverageBias > 0 ? '+' + coverageBias : coverageBias },
+            { label: 'HUE', val: hueShift, min: -180, max: 180, step: 1, set: setHueShift, display: String(hueShift) + 'deg' },
             { label: 'OCTAVES', val: octaves, min: 1, max: 5, step: 1, set: setOctaves, display: octaves },
-            { label: 'BASE OPACITY', val: baseOpacity, min: 0, max: 1, step: 0.05, set: setBaseOpacity, display: baseOpacity.toFixed(2) },
+            { label: 'BASE OPACITY', val: baseOpacity, min: 0, max: 1, step: 0.05, set: setBaseOpacity, display: String(Math.round(baseOpacity * 100)) + '%' },
             { label: 'DETAIL AMOUNT', val: designAmount, min: 0, max: 1.5, step: 0.05, set: setDesignAmount, display: designAmount.toFixed(2) },
             { label: 'RESOLUTION', val: gridSize, min: 64, max: 256, step: 16, set: setGridSize, display: gridSize },
             { label: 'PX SIZE', val: pixelSize, min: 2, max: 16, step: 1, set: setPixelSize, display: pixelSize },
@@ -704,6 +1027,7 @@ export default function App() {
 
         </div>
       </div>
+      )}
     </div>
   );
 }

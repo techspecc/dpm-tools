@@ -1,26 +1,83 @@
-import { BrowserWindow as e, app as t } from "electron";
-import n from "node:path";
-import { fileURLToPath as r } from "node:url";
+import { BrowserWindow, app } from "electron";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 //#region electron/main.ts
-var i = n.dirname(r(import.meta.url));
-process.env.DIST = n.join(i, "../dist"), process.env.VITE_PUBLIC = t.isPackaged ? process.env.DIST : n.join(process.env.DIST, "../public");
-var a, o = process.env.VITE_DEV_SERVER_URL;
-function s() {
-	a = new e({
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+process.env.DIST = path.join(__dirname, "../dist");
+process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, "../public");
+var win;
+var previewWin;
+var controlsWin;
+var VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+var MODULAR_WINDOWS = process.env.MODULAR_WINDOWS === "1";
+function createWindow() {
+	win = new BrowserWindow({
 		width: 1200,
 		height: 800,
-		transparent: !0,
+		transparent: true,
 		titleBarStyle: "hiddenInset",
 		vibrancy: "fullscreen-ui",
 		backgroundColor: "#00000000",
 		webPreferences: {
-			preload: n.join(i, "preload.mjs"),
-			nodeIntegration: !1,
-			contextIsolation: !0
+			preload: path.join(__dirname, "preload.mjs"),
+			nodeIntegration: false,
+			contextIsolation: true
 		}
-	}), o ? a.loadURL(o) : a.loadFile(n.join(process.env.DIST, "index.html"));
+	});
+	if (VITE_DEV_SERVER_URL) win.loadURL(VITE_DEV_SERVER_URL);
+	else win.loadFile(path.join(process.env.DIST, "index.html"));
 }
-t.on("window-all-closed", () => {
-	process.platform !== "darwin" && (t.quit(), a = null);
-}), t.whenReady().then(s);
+function loadPanelWindow(target, panel) {
+	if (VITE_DEV_SERVER_URL) {
+		const url = new URL(VITE_DEV_SERVER_URL);
+		url.searchParams.set("panel", panel);
+		target.loadURL(url.toString());
+	} else target.loadFile(path.join(process.env.DIST, "index.html"), { search: `panel=${panel}` });
+}
+function createModularWindows() {
+	previewWin = new BrowserWindow({
+		width: 980,
+		height: 760,
+		x: 420,
+		y: 70,
+		transparent: true,
+		title: "Camo Preview",
+		titleBarStyle: "hiddenInset",
+		vibrancy: "fullscreen-ui",
+		backgroundColor: "#00000000",
+		webPreferences: {
+			preload: path.join(__dirname, "preload.mjs"),
+			nodeIntegration: false,
+			contextIsolation: true
+		}
+	});
+	controlsWin = new BrowserWindow({
+		width: 380,
+		height: 760,
+		x: 20,
+		y: 70,
+		transparent: true,
+		title: "Camo Controls",
+		titleBarStyle: "hiddenInset",
+		vibrancy: "fullscreen-ui",
+		backgroundColor: "#00000000",
+		webPreferences: {
+			preload: path.join(__dirname, "preload.mjs"),
+			nodeIntegration: false,
+			contextIsolation: true
+		}
+	});
+	loadPanelWindow(previewWin, "preview");
+	loadPanelWindow(controlsWin, "controls");
+}
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") {
+		app.quit();
+		win = null;
+	}
+});
+app.whenReady().then(() => {
+	if (MODULAR_WINDOWS) createModularWindows();
+	else createWindow();
+});
 //#endregion

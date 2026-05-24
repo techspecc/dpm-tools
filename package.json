@@ -1,7 +1,8 @@
 {
-  "name": "camo-generator",
+  "name": "dpm-tool-1",
   "private": true,
   "version": "0.0.0",
+  "description": "Digital camouflage pattern generator (Electron + React)",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
