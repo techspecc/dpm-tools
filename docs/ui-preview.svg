@@ -1,0 +1,105 @@
+<svg width="1400" height="860" viewBox="0 0 1400 860" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <linearGradient id="desk" x1="0" y1="0" x2="1400" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#101820"/>
+      <stop offset="0.45" stop-color="#1a2430"/>
+      <stop offset="1" stop-color="#121c16"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(980 280) rotate(90) scale(520 680)">
+      <stop stop-color="#2a3d52" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#2a3d52" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadowL" x="-30%" y="-20%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="shadowR" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#000000" flood-opacity="0.62"/>
+    </filter>
+    <clipPath id="previewInner">
+      <rect x="16" y="52" width="808" height="612" rx="8"/>
+    </clipPath>
+    <clipPath id="controlsScroll">
+      <rect x="0" y="132" width="360" height="548" rx="0"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1400" height="860" rx="18" fill="url(#desk)"/>
+  <rect width="1400" height="860" rx="18" fill="url(#glow)"/>
+
+  <!-- Controls window -->
+  <g filter="url(#shadowL)" transform="translate(72 96)">
+    <rect width="360" height="668" rx="14" fill="#0C0F12" fill-opacity="0.72" stroke="white" stroke-opacity="0.12"/>
+    <rect width="360" height="44" rx="14" fill="white" fill-opacity="0.06"/>
+    <rect y="30" width="360" height="14" fill="#0C0F12" fill-opacity="0.72"/>
+    <circle cx="22" cy="22" r="6" fill="#FF5F57"/>
+    <circle cx="42" cy="22" r="6" fill="#FEBC2E"/>
+    <circle cx="62" cy="22" r="6" fill="#28C840"/>
+    <text x="180" y="27" text-anchor="middle" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="1.2">CAMO CONTROLS</text>
+
+    <rect y="44" width="360" height="52" fill="white" fill-opacity="0.04"/>
+    <text x="18" y="66" fill="white" fill-opacity="0.88" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="2">CMGEN // 0.1</text>
+    <text x="342" y="66" text-anchor="end" fill="white" fill-opacity="0.38" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="1.5">SEED 658179</text>
+
+    <rect y="96" width="360" height="36" fill="white" fill-opacity="0.04"/>
+    <line x1="0" y1="132" x2="360" y2="132" stroke="white" stroke-opacity="0.1"/>
+    <text x="36" y="118" fill="white" fill-opacity="0.72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9" letter-spacing="1">BACK</text>
+    <text x="108" y="118" fill="white" fill-opacity="0.72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9" letter-spacing="1">GENERATE</text>
+    <text x="186" y="118" fill="white" fill-opacity="0.72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9" letter-spacing="1">SHUFFLE</text>
+    <rect x="248" y="102" width="112" height="24" fill="white" fill-opacity="0.92"/>
+    <text x="304" y="118" text-anchor="middle" fill="#111" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9" font-weight="700" letter-spacing="1">EXPORT SVG</text>
+    <line x1="72" y1="96" x2="72" y2="132" stroke="white" stroke-opacity="0.1"/>
+    <line x1="144" y1="96" x2="144" y2="132" stroke="white" stroke-opacity="0.1"/>
+    <line x1="216" y1="96" x2="216" y2="132" stroke="white" stroke-opacity="0.1"/>
+
+    <g clip-path="url(#controlsScroll)">
+      <text x="18" y="162" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5">PRESET</text>
+      <rect x="18" y="172" width="324" height="34" stroke="white" stroke-opacity="0.14"/>
+      <text x="28" y="194" fill="white" fill-opacity="0.82" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1">MARPAT WOODLAND</text>
+
+      <text x="18" y="236" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5">PALETTE</text>
+      <text x="342" y="236" text-anchor="end" fill="white" fill-opacity="0.35" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10">4 LAYERS</text>
+      <rect x="38" y="252" width="18" height="18" fill="#1b431e" stroke="white" stroke-opacity="0.12"/>
+      <rect x="38" y="280" width="18" height="18" fill="#5a5c2e" stroke="white" stroke-opacity="0.12"/>
+      <rect x="38" y="308" width="18" height="18" fill="#3e423b" stroke="white" stroke-opacity="0.12"/>
+      <rect x="38" y="336" width="18" height="18" fill="#867664" stroke="white" stroke-opacity="0.12"/>
+
+      <line x1="18" y1="372" x2="342" y2="372" stroke="white" stroke-opacity="0.1"/>
+
+      <text x="18" y="402" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5">SCALE</text>
+      <text x="342" y="402" text-anchor="end" fill="white" fill-opacity="0.82" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10">6.5</text>
+      <line x1="18" y1="414" x2="342" y2="414" stroke="white" stroke-opacity="0.18"/>
+      <rect x="210" y="410" width="2" height="8" fill="white" fill-opacity="0.85"/>
+
+      <text x="18" y="448" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5">DENSENESS</text>
+      <text x="342" y="448" text-anchor="end" fill="white" fill-opacity="0.82" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10">1.05</text>
+      <line x1="18" y1="460" x2="342" y2="460" stroke="white" stroke-opacity="0.18"/>
+      <rect x="248" y="456" width="2" height="8" fill="white" fill-opacity="0.85"/>
+
+      <text x="18" y="494" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5">ROUGHNESS</text>
+      <text x="342" y="494" text-anchor="end" fill="white" fill-opacity="0.82" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10">0.85</text>
+      <line x1="18" y1="506" x2="342" y2="506" stroke="white" stroke-opacity="0.18"/>
+      <rect x="180" y="502" width="2" height="8" fill="white" fill-opacity="0.85"/>
+
+      <text x="18" y="540" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5">RESOLUTION</text>
+      <text x="342" y="540" text-anchor="end" fill="white" fill-opacity="0.82" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10">192</text>
+      <line x1="18" y1="552" x2="342" y2="552" stroke="white" stroke-opacity="0.18"/>
+      <rect x="196" y="548" width="2" height="8" fill="white" fill-opacity="0.85"/>
+    </g>
+  </g>
+
+  <!-- Preview window -->
+  <g filter="url(#shadowR)" transform="translate(468 64)">
+    <rect width="840" height="668" rx="14" fill="#101418" fill-opacity="0.35" stroke="white" stroke-opacity="0.18"/>
+    <rect width="840" height="44" rx="14" fill="white" fill-opacity="0.06"/>
+    <rect y="30" width="840" height="14" fill="#101418" fill-opacity="0.35"/>
+    <circle cx="22" cy="22" r="6" fill="#FF5F57"/>
+    <circle cx="42" cy="22" r="6" fill="#FEBC2E"/>
+    <circle cx="62" cy="22" r="6" fill="#28C840"/>
+    <text x="420" y="27" text-anchor="middle" fill="white" fill-opacity="0.45" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="1.2">CAMO PREVIEW</text>
+
+    <rect x="16" y="52" width="808" height="612" rx="8" fill="#0a0d10" fill-opacity="0.25" stroke="white" stroke-opacity="0.08"/>
+    <g clip-path="url(#previewInner)">
+      <image xlink:href="sample-camo.svg" x="16" y="52" width="808" height="808" preserveAspectRatio="xMidYMid slice"/>
+    </g>
+  </g>
+</svg>
