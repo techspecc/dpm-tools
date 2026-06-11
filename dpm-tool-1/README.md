@@ -4,9 +4,7 @@
 
 Electron desktop app for generating digital camouflage patterns. Pick from reference-backed military presets (PLA Type 07, MARPAT, UCP, CADPAT, and more), tune density and variation, and export SVG tiles.
 
-Modular layout (separate preview and controls windows):
-
-![DPM Tool 1 — floating controls and camo preview](docs/ui-preview.png)
+See the [repo README](../README.md) for a UI preview screenshot.
 
 ## Development
 

@@ -1,6 +1,10 @@
 # DPM Tools
 
-Work-in-progress toolkit for digital pattern / camouflage design workflows.
+> **Work in progress** — experimental design tooling, not production-ready.
+
+Toolkit for digital pattern and camouflage design workflows.
+
+![DPM Tool 1 — floating controls and camo preview](docs/ui-preview.png)
 
 ## Apps
 
@@ -18,6 +22,17 @@ npm install
 npm run dev
 ```
 
+Modular window layout (separate preview and controls panels):
+
+```bash
+MODULAR_WINDOWS=1 npm run dev
+```
+
+## Preview assets
+
+- `docs/ui-preview.svg` — editable composite of the floating window layout
+- `docs/sample-camo.svg` — exported pattern tile used in the preview
+
 ## Status
 
-Experimental dev tooling — not production-ready. Expect rough edges.
+Experimental dev tooling — expect rough edges.
